@@ -1,44 +1,89 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("util");
-const log = __importStar(require("./logger"));
 class Score {
     constructor() {
         // Primary Key = mazeId:teamId:gameId:gameRound
-        this.mazeId = '';
-        this.teamId = '';
-        this.gameId = '';
-        this.gameRound = 0;
+        this._mazeId = '';
+        this._teamId = '';
+        this._gameId = '';
+        this._gameRound = 0;
+        this._scoreKey = '';
         // various score elements
-        this.moveCount = 0;
-        this.backtrackCount = 0;
-        this.bonusPoints = 0;
+        this._moveCount = 0;
+        this._backtrackCount = 0;
+        this._bonusPoints = 0;
         // the final result of the game 
-        this.gameResult = '';
+        this._gameResult = '';
     }
-    /**
-     * Returns a new Score object
-     * @param mazeId
-     * @param teamId
-     * @param gameId
-     * @param gameRound
-     */
-    constuctor(mazeId, teamId, gameId, gameRound) {
-        this.mazeId = mazeId;
-        this.teamId = teamId;
-        this.gameId = gameId;
-        this.gameRound = gameRound;
-        log.debug(__filename, 'constructor()', 'Score object instantiated.  Key=' + this.getScoreKey());
+    /**         Accessors         **/
+    get mazeId() {
+        return this._mazeId;
     }
-    getScoreKey() {
-        return util_1.format('%s:%s:%s:%s', this.mazeId, this.teamId, this.gameId, this.gameRound);
+    set mazeId(value) {
+        this._mazeId = value;
+        this.setScoreKey();
+    }
+    get teamId() {
+        return this._teamId;
+    }
+    set teamId(value) {
+        this._teamId = value;
+        this.setScoreKey();
+    }
+    get gameId() {
+        return this._gameId;
+    }
+    set gameId(value) {
+        this._gameId = value;
+        this.setScoreKey();
+    }
+    get gameRound() {
+        return this._gameRound;
+    }
+    set gameRound(value) {
+        this._gameRound = value;
+        this.setScoreKey();
+    }
+    get moveCount() {
+        return this._moveCount;
+    }
+    set moveCount(value) {
+        this._moveCount = value;
+    }
+    get backTrackCount() {
+        return this._backtrackCount;
+    }
+    set backTrackCount(value) {
+        this._backtrackCount = value;
+    }
+    get bonusPoints() {
+        return this._bonusPoints;
+    }
+    set bonusPoints(value) {
+        this._bonusPoints = value;
+    }
+    get gameResult() {
+        return this._gameResult;
+    }
+    set gameResult(value) {
+        this._gameResult = value;
+    }
+    get scoreKey() {
+        return this._scoreKey;
+    }
+    setScoreKey() {
+        this._scoreKey = util_1.format('%s:%s:%s:%s', this.mazeId, this.teamId, this.gameId, this.gameRound);
+    }
+    // CANNOT get a parameterized constructor to work! :(
+    constuctor() { }
+    loadFromJSON(json) {
+        let score = JSON.parse(json);
+        this._mazeId = score._mazeId;
+        this._teamId = score._teamId;
+        this._gameId = score._gameId;
+        this._gameRound = score._gameRound;
+        this._scoreKey = util_1.format('%s:%s:%s:%s', score.mazeId, score.teamId, score.gameId, score.gameRound);
     }
 }
 exports.Score = Score;
