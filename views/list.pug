@@ -1,0 +1,39 @@
+doctype html
+html(lang='en')
+    head
+        style
+            include style.css
+        title Score Service - List
+        body
+            h1 Score Service - List Scores
+            hr
+            br
+            div
+                #scores
+                    if scores.length > 0
+                        table
+                            th Maze
+                            th Team
+                            th Game
+                            th Round
+                            th Moves
+                            th Back-Tracks
+                            th Bonus Points
+                            th Status
+                            th Actions
+                            each score in scores
+                                tr
+                                    td= score._mazeId
+                                    td= score._teamId
+                                    td= score._gameId
+                                    td= score._gameRound
+                                    td= score._moveCount
+                                    td= score._backtrackCount
+                                    td= score._bonusPoints
+                                    td= score._gameResult
+                                    td
+                                        a(href='/get/' + score._mazeId + ':' + score._teamId + ':' + score._gameId + ':' + score._gameRound) json
+                                        | &nbsp;|&nbsp;
+                                        a(href='/delete/' + score._mazeId + ':' + score._teamId + ':' + score._gameId + ':' + score._gameRound) delete
+                    else
+                        h3 No scores found in the database.
