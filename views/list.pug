@@ -1,5 +1,5 @@
 doctype html
-html(lang='en')
+html(lang='en-US')
     head
         style
             include style.css
@@ -23,17 +23,17 @@ html(lang='en')
                             th Actions
                             each score in scores
                                 tr
-                                    td= score._mazeId
-                                    td= score._teamId
-                                    td= score._gameId
-                                    td= score._gameRound
-                                    td= score._moveCount
-                                    td= score._backtrackCount
-                                    td= score._bonusPoints
-                                    td= score._gameResult
+                                    td= score.mazeId
+                                    td= score.teamId
+                                    td= score.gameId
+                                    td= score.gameRound
+                                    td= score.moveCount
+                                    td= score.backtrackCount
+                                    td= score.bonusPoints
+                                    td= score.gameResult
                                     td
-                                        a(href='/get/' + score._mazeId + ':' + score._teamId + ':' + score._gameId + ':' + score._gameRound) json
+                                        a(href='/get/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) json
                                         | &nbsp;|&nbsp;
-                                        a(href='/delete/' + score._mazeId + ':' + score._teamId + ':' + score._gameId + ':' + score._gameRound) delete
+                                        a(href='/delete/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) delete
                     else
                         h3 No scores found in the database.
