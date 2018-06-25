@@ -9,7 +9,7 @@ import { Server } from 'http';
 import { Score } from './Score';
 
 // constant value references
-const DB_URL = 'mongodb+srv://mdbuser:cc2018-mdbpw@cluster0-bxvkt.mongodb.net/';
+const DB_URL = format('http://%s:%s@%s/', process.env['DB_USER'], process.env['DB_PASS'], process.env['DB_URL']);
 const DB_NAME = 'cc2018';
 const COL_NAME = 'scores';
 const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
