@@ -3,7 +3,7 @@ html
     head
         style
             include style.css
-        title Maze Service - API Documentation
+        title Score Service - API Documentation
     body
         h1 API Documentation
         hr
@@ -19,62 +19,56 @@ html
             th Description
             tr
                 td Get
+                td Get All
+                td JSON 
+                td(class='td-left') N/A
+                td(class='td-left') Score
+                td(class='td-left')
+                    a(href= 'http://' + host + '/get') Sample Link
+                td Current
+                td(class='td-left') Returns all available scores.
+            tr
+                td Get
                 td Get
                 td JSON 
-                td(class='td-left') MazeId - height:width:seed
-                td(class='td-left') Maze
+                td(class='td-left') QueryString: <br>
+                    ul
+                        li /get?scoreKey=mH:mW:mSeed:teamID:gameID:gameRound
+                        li /get?teamId=Team ID (team name)
+                        li /get?mazeId=Maze ID (height:width:seed)
+                        li /get?gameId=Game ID
+                td(class='td-left') Scores
                 td(class='td-left')
-                    a(href=sampleGet) #{sampleGet}
+                    a(href= 'http://' + host + '/get?mazeId=10:15:SimpleSample') Sample Link
                 td Current
-                td(class='td-left') Returns the first maze with the matching MazeID
+                td(class='td-left') Returns available scores matching the search criteria.
             tr
                 td Get
-                td Get All
-                td JSON
-                td(class='td-left') N/A
-                td(class='td-left') Array (Maze Info)
+                td Insert / Update
+                td JSON 
+                td(class='td-left') Maze ID (H:W:Seed) / TeamID (Team Name) / Game ID / Game Round / Move Count / Backtrack Count / Bonus Points / Round Result
+                td(class='td-left') Result
                 td(class='td-left')
-                    a(href=sampleGetAll) #{sampleGetAll}
+                    a(href= 'http://' + host + '/add_update/10:15:SimpleSample/Dungeon_Delvers/3232144/4/48/12/3122/WIN') Sample Link
                 td Current
-                td(class='td-left') Returns a list key data for all existing mazes
-            tr
-                td Get
-                td Generate
-                td JSON
-                td(class='td-left') Parameters - height/width/seed
-                td(class='td-left') New Maze
-                td(class='td-left')
-                    a(href=sampleGenerate) #{sampleGenerate}
-                td Current
-                td(class='td-left') Generates, stores, and returns a new maze object
+                td(class='td-left') Inserts or updates a score document.
             tr
                 td Get
                 td Delete
-                td JSON
-                td(class='td-left') MazeId - height:width:seed
+                td JSON 
+                td(class='td-left') Score Key (mH:mW:mSeed:teamID:gameID:gameRound)
                 td(class='td-left') Result
                 td(class='td-left')
-                    a(href=sampleDelete) #{sampleDelete}
+                    a(href= 'http://' + host + '/delete/10:15:SimpleSample:Dungeon_Delvers:3232144:4') Sample Link
                 td Current
-                td(class='td-left') Deletes a single maze document
+                td(class='td-left') Deletes a single score with the matching Score Key.
             tr
                 td Get
                 td List
-                td HTML
+                td HTML 
                 td(class='td-left') N/A
                 td(class='td-left') HTML Page
                 td(class='td-left')
-                    a(href=sampleList) #{sampleList}
+                    a(href= 'http://' + host + '/list') Sample Link
                 td Current
-                td(class='td-left') Lists all mazes w/ handy function links
-            tr
-                td Get
-                td View
-                td HTML
-                td(class='td-left') MazeId - height:width:seed
-                td(class='td-left') HTML Page
-                td(class='td-left')
-                    a(href=sampleView) #{sampleView}
-                td Current
-                td(class='td-left') Simple view of a maze w/ text-based rendering.
-
+                td(class='td-left') Lists all available scores w/ handy links to manage them.

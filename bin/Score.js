@@ -4,86 +4,92 @@ const util_1 = require("util");
 class Score {
     constructor() {
         // Primary Key = mazeId:teamId:gameId:gameRound
-        this._mazeId = '';
-        this._teamId = '';
-        this._gameId = '';
-        this._gameRound = 0;
-        this._scoreKey = '';
-        // various score elements
-        this._moveCount = 0;
-        this._backtrackCount = 0;
-        this._bonusPoints = 0;
+        this.mazeId = '';
+        this.teamId = '';
+        this.gameId = '';
+        this.gameRound = 0;
+        this.scoreKey = '';
         // the final result of the game 
-        this._gameResult = '';
+        this.gameResult = '';
+        // various score elements
+        this.moveCount = 0;
+        this.backtrackCount = 0;
+        this.bonusPoints = 0;
+    }
+    get BacktrackCount() {
+        return this.backtrackCount;
+    }
+    set BacktrackCount(value) {
+        this.backtrackCount = value;
     }
     /**         Accessors         **/
-    get mazeId() {
-        return this._mazeId;
+    get MazeId() {
+        return this.mazeId;
     }
-    set mazeId(value) {
-        this._mazeId = value;
+    set MazeId(value) {
+        this.mazeId = value;
         this.setScoreKey();
     }
-    get teamId() {
-        return this._teamId;
+    get TeamId() {
+        return this.teamId;
     }
-    set teamId(value) {
-        this._teamId = value;
+    set TeamId(value) {
+        this.teamId = value;
         this.setScoreKey();
     }
-    get gameId() {
-        return this._gameId;
+    get GameId() {
+        return this.gameId;
     }
-    set gameId(value) {
-        this._gameId = value;
+    set GameId(value) {
+        this.gameId = value;
         this.setScoreKey();
     }
-    get gameRound() {
-        return this._gameRound;
+    get GameRound() {
+        return this.gameRound;
     }
-    set gameRound(value) {
-        this._gameRound = value;
+    set GameRound(value) {
+        this.gameRound = value;
         this.setScoreKey();
     }
-    get moveCount() {
-        return this._moveCount;
+    get MoveCount() {
+        return this.moveCount;
     }
-    set moveCount(value) {
-        this._moveCount = value;
+    set MoveCount(value) {
+        this.moveCount = value;
     }
-    get backTrackCount() {
-        return this._backtrackCount;
+    get BackTrackCount() {
+        return this.backtrackCount;
     }
-    set backTrackCount(value) {
-        this._backtrackCount = value;
+    set BackTrackCount(value) {
+        this.backtrackCount = value;
     }
-    get bonusPoints() {
-        return this._bonusPoints;
+    get BonusPoints() {
+        return this.bonusPoints;
     }
-    set bonusPoints(value) {
-        this._bonusPoints = value;
+    set BonusPoints(value) {
+        this.bonusPoints = value;
     }
-    get gameResult() {
-        return this._gameResult;
+    get GameResult() {
+        return this.gameResult;
     }
-    set gameResult(value) {
-        this._gameResult = value;
+    set GameResult(value) {
+        this.gameResult = value;
     }
-    get scoreKey() {
-        return this._scoreKey;
+    get ScoreKey() {
+        return this.scoreKey;
     }
     setScoreKey() {
-        this._scoreKey = util_1.format('%s:%s:%s:%s', this.mazeId, this.teamId, this.gameId, this.gameRound);
+        this.scoreKey = util_1.format('%s:%s:%s:%s', this.mazeId, this.teamId, this.gameId, this.gameRound);
     }
     // CANNOT get a parameterized constructor to work! :(
     constuctor() { }
     loadFromJSON(json) {
         let score = JSON.parse(json);
-        this._mazeId = score._mazeId;
-        this._teamId = score._teamId;
-        this._gameId = score._gameId;
-        this._gameRound = score._gameRound;
-        this._scoreKey = util_1.format('%s:%s:%s:%s', score.mazeId, score.teamId, score.gameId, score.gameRound);
+        this.mazeId = score.mazeId;
+        this.teamId = score.teamId;
+        this.gameId = score.gameId;
+        this.gameRound = score.gameRound;
+        this.scoreKey = util_1.format('%s:%s:%s:%s', score.mazeId, score.teamId, score.gameId, score.gameRound);
     }
 }
 exports.Score = Score;
