@@ -8,12 +8,14 @@ import express from 'express';
 import { Server } from 'http';
 import { Score } from './Score';
 
-// constant value references
-const DB_URL = format('http://%s:%s@%s/', process.env['DB_USER'], process.env['DB_PASS'], process.env['DB_URL']);
-const DB_NAME = 'cc2018';
-const COL_NAME = 'scores';
-const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
+// constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
+const DB_NAME = 'cc2018';
+const DB_URL = format('%s://%s:%s@%s/', process.env['DB_PROTOCOL'], process.env['DB_USER'], process.env['DB_USERPW'], process.env['DB_URL']);
+const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
+
+// standard local constants
+const COL_NAME = 'scores';
 const SVC_NAME = 'score-service';
 
 // set the logging level based on current env
