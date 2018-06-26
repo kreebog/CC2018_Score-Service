@@ -2,32 +2,27 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const url_1 = __importDefault(require("url"));
 const path_1 = __importDefault(require("path"));
-const log = __importStar(require("./Logger"));
 const util_1 = require("util");
 const mongodb_1 = require("mongodb");
 const express_1 = __importDefault(require("express"));
-const Score_1 = require("./Score");
+const cc2018_ts_lib_1 = require("cc2018-ts-lib");
+const Logger_1 = require("cc2018-ts-lib/dist/Logger");
 // constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
 const DB_NAME = 'cc2018';
 const DB_URL = util_1.format('%s://%s:%s@%s/', process.env['DB_PROTOCOL'], process.env['DB_USER'], process.env['DB_USERPW'], process.env['DB_URL']);
 const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
+// grab the logger singleton
+const log = cc2018_ts_lib_1.Logger.getInstance();
 // standard local constants
 const COL_NAME = 'scores';
 const SVC_NAME = 'score-service';
 // set the logging level based on current env
-log.setLogLevel((ENV == 'DVLP' ? log.LOG_LEVELS.DEBUG : log.LOG_LEVELS.INFO));
+log.setLogLevel((ENV == 'DVLP' ? Logger_1.LOG_LEVELS.DEBUG : Logger_1.LOG_LEVELS.INFO));
 log.info(__filename, SVC_NAME, 'Starting service with environment settings for: ' + ENV);
 // create the express app reference
 const app = express_1.default();
@@ -98,7 +93,7 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
         }); // route: /get:scoreKey
         // add a new score or update an existing score
         app.get('/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backTrackCount/:bonusPoints/:gameResult', (req, res) => {
-            let score = new Score_1.Score();
+            let score = new cc2018_ts_lib_1.Score();
             score.MazeId = req.params.mazeId;
             score.TeamId = req.params.teamId;
             score.GameId = req.params.gameId;
