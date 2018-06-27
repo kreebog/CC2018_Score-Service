@@ -13,7 +13,13 @@ import { LOG_LEVELS } from 'cc2018-ts-lib/dist/Logger';
 // constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
 const DB_NAME = 'cc2018';
-const DB_URL = format('%s://%s:%s@%s/', process.env['DB_PROTOCOL'], process.env['DB_USER'], process.env['DB_USERPW'], process.env['DB_URL']);
+const DB_URL = format('%s://%s:%s@%s/%s', 
+    process.env['DB_PROTOCOL'], 
+    process.env['DB_USER'], 
+    process.env['DB_USERPW'], 
+    process.env['DB_URL'],
+    DB_NAME);
+
 const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
 
 // grab the logger singleton
@@ -51,6 +57,13 @@ MongoClient.connect(DB_URL, (err, client) => {
     // so far so good - let's start the service
     httpServer = app.listen(SVC_PORT, function() {
         log.info(__filename, SVC_NAME, 'Listening on port ' + SVC_PORT);
+
+        // allow CORS for this application
+        app.use(function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+        });
 
         /* now handle routes with express */
         /**
