@@ -30,7 +30,7 @@ const COL_NAME = 'scores';
 const SVC_NAME = 'score-service';
 
 // set the logging level based on current env
-log.setLogLevel((ENV == 'DVLP' ? LOG_LEVELS.DEBUG : LOG_LEVELS.INFO));
+log.setLogLevel(parseInt(process.env['LOG_LEVEL'] || '3')); // defaults to "INFO"
 log.info(__filename, SVC_NAME, 'Starting service with environment settings for: ' + ENV);
 
 // create the express app reference
