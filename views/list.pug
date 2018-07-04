@@ -1,5 +1,5 @@
 doctype html
-html(lang='en-US')
+html(lang='en')
     head
         style
             include style.css
@@ -8,7 +8,7 @@ html(lang='en-US')
             h1 Score Service - List Scores
             hr
             br
-            div
+            div(id='goog-gt-tt', class='skiptranslate')
                 #scores
                     if scores.length > 0
                         table
