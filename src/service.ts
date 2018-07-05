@@ -7,7 +7,6 @@ import express from 'express';
 import { Server } from 'http';
 
 import { Logger, Score } from 'cc2018-ts-lib';
-import { LOG_LEVELS } from 'cc2018-ts-lib/dist/Logger';
 
 // constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
