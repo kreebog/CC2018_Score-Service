@@ -9,16 +9,17 @@ import { Server } from 'http';
 import { Logger, Score } from 'cc2018-ts-lib';
 import { LOG_LEVELS } from 'cc2018-ts-lib/dist/Logger';
 
-
 // constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
 const DB_NAME = 'cc2018';
-const DB_URL = format('%s://%s:%s@%s/%s', 
-    process.env['DB_PROTOCOL'], 
-    process.env['DB_USER'], 
-    process.env['DB_USERPW'], 
+const DB_URL = format(
+    '%s://%s:%s@%s/%s',
+    process.env['DB_PROTOCOL'],
+    process.env['DB_USER'],
+    process.env['DB_USERPW'],
     process.env['DB_URL'],
-    DB_NAME);
+    DB_NAME
+);
 
 const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
 
@@ -44,181 +45,203 @@ app.set('view engine', 'pug');
 
 // connect to the database first
 log.info(__filename, SVC_NAME, 'Connecting to MongoDB: ' + DB_URL);
-MongoClient.connect(DB_URL, (err, client) => {
-    if (err) {
-        log.error(__filename, format('MongoClient.connect(%s)', DB_URL), 'Error connecting to MongoDB: ' + err.message);
-        return err;
-    }
+MongoClient.connect(
+    DB_URL,
+    (err, client) => {
+        if (err) {
+            log.error(
+                __filename,
+                format('MongoClient.connect(%s)', DB_URL),
+                'Error connecting to MongoDB: ' + err.message
+            );
+            return err;
+        }
 
-    let db = client.db(DB_NAME);
-    let col = db.collection(COL_NAME);
-    mongoDBClient = client;
+        let db = client.db(DB_NAME);
+        let col = db.collection(COL_NAME);
+        mongoDBClient = client;
 
-    // so far so good - let's start the service
-    httpServer = app.listen(SVC_PORT, function() {
-        log.info(__filename, SVC_NAME, 'Listening on port ' + SVC_PORT);
+        // so far so good - let's start the service
+        httpServer = app.listen(SVC_PORT, function() {
+            log.info(__filename, SVC_NAME, 'Listening on port ' + SVC_PORT);
 
-        // allow CORS for this application
-        app.use(function(req, res, next) {
-            res.header("Access-Control-Allow-Origin", "*");
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            next();
-        });
-
-        /* now handle routes with express */
-        /**
-         * Base scores get route:
-         *  /get returns all
-         *  /get?scoreKey=<SCOREKEY> returns a specific score
-         *  /get?teamId=<TEAMID> returns all scores for a specific team 
-         *  /get?mazeId=<MAZEID> returns all scores for a specific maze
-         */
-        app.get('/get', (req, res) => {
-            let searchCriteria = {};
-
-            if (req.url.includes('?')) {
-                let urlParts = url.parse(req.url, true);
-                searchCriteria = urlParts.query;
-            }
-            
-            col.find(searchCriteria).toArray( (err, docs) => {
-                if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
-                    return res.status(500).json({'status':format('Error getting scores from "%s": %s', COL_NAME, err.message)});
-                }
-
-                if (docs.length == 0) {
-                    res.status(200).json({'status':'No scores found.'});
-                } else {
-                    res.status(200).json(docs);
-                }
+            // allow CORS for this application
+            app.use(function(req, res, next) {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+                next();
             });
-        }); // route: /get
-        
-        // get a score by scoreKey
-        app.get('/get/:scoreKey', (req, res) => {
-            let scoreKey = req.params.scoreKey;
 
-            // search the collection and return first score with matching key
-            col.find({scoreKey:scoreKey}).toArray( (err, docs) => {
-                if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
-                    return res.status(500).json({'status':format('Error finding "%s" in "%s": %s', scoreKey, COL_NAME, err.message)});
+            /* now handle routes with express */
+            /**
+             * Base scores get route:
+             *  /get returns all
+             *  /get?scoreKey=<SCOREKEY> returns a specific score
+             *  /get?teamId=<TEAMID> returns all scores for a specific team
+             *  /get?mazeId=<MAZEID> returns all scores for a specific maze
+             */
+            app.get('/get', (req, res) => {
+                let searchCriteria = {};
+
+                if (req.url.includes('?')) {
+                    let urlParts = url.parse(req.url, true);
+                    searchCriteria = urlParts.query;
                 }
 
-                // Insert score if one is not found.  Update score if it's already in the DB
-                if (docs.length == 0) {
-                    log.debug(__filename, req.path, format('No score with scoreId" %s.', scoreKey));
-                    res.status(200).json({result: format('Score not found: %s', scoreKey)});
-                } else {
-                    log.debug(__filename, req.path, format('Score "%s" found, returning json...', scoreKey));
-                    res.status(200).json(docs[0]);
-                }
-            });
-        }); // route: /get:scoreKey
+                col.find(searchCriteria).toArray((err, docs) => {
+                    if (err) {
+                        log.error(__filename, req.path, JSON.stringify(err));
+                        return res
+                            .status(500)
+                            .json({ status: format('Error getting scores from "%s": %s', COL_NAME, err.message) });
+                    }
 
-        // add a new score or update an existing score
-        app.get('/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backTrackCount/:bonusPoints/:gameResult', (req, res) => {
-            let score: Score = new Score();
-            score.MazeId = req.params.mazeId;
-            score.TeamId = req.params.teamId;
-            score.GameId = req.params.gameId;
-            score.GameRound = req.params.gameRound;
-            score.MoveCount = req.params.moveCount;
-            score.BackTrackCount = req.params.backTrackCount;
-            score.BonusPoints = req.params.bonusPoints;
-            score.GameResult = req.params.gameResult;
-
-            // search the collection for a maze with the right id
-            col.find({scoreKey:score.ScoreKey}).toArray( (err, docs) => {
-                if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
-                    return res.status(500).json({'status':format('Error finding "%s" in "%s": %s', score.ScoreKey, COL_NAME, err.message)});
-                }
-
-                // Update score if it's already in the DB, otherwise insert new score
-                if (docs.length > 0) {
-                    log.debug(__filename, req.path, format('Updating score %s.', score.ScoreKey));
-                    console.log(JSON.stringify(score));
-                    col.update({scoreKey:score.ScoreKey}, score);
-                    res.status(200).json({result: 'Score Updated'});
-                } else {
-                    log.debug(__filename, req.path, format('Inserting score %s.', score.ScoreKey));
-                    col.insert(score);
-                    res.status(200).json({result: 'Score Inserted'});
-                }
-            });
-        });
-
-        // delete a score
-        app.get('/delete/:scoreKey', (req, res) => {
-            // delete the first document with the matching mazeId
-            let scoreKey = req.params.scoreKey;
-            col.deleteOne({scoreKey: scoreKey}, function (err, results) {
-                if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
-                    return res.status(500).json({'status':format('Error finding "%s" in "%s": %s', scoreKey, COL_NAME, err.message)});
-                }
-
-                // send the result code with deleted doc count
-                res.status(200).json({'status': 'ok', 'count': results.deletedCount});
-                log.info(__filename, req.path, format('%d document(s) deleted', results.deletedCount));
-            });
-        }); // route: /delete/:scoreKey
-
-        // list all scores (html)
-        app.get('/list', (req, res) => {
-            col.find({}).toArray( (err, docs) => {
-                if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
-                    return res.status(500).json({'status':format('Error gettings cores from "%s": %s', COL_NAME, err.message)});
-                }
-
-                res.render('list', {
-                    contentType: 'text/html',
-                    responseCode: 200,
-                    scores: docs
+                    if (docs.length == 0) {
+                        res.status(200).json({ status: 'No scores found.' });
+                    } else {
+                        res.status(200).json(docs);
+                    }
                 });
-            });
-        }); // route: /list
-        
-        // Handle favicon requests - using the BCBST favicon.ico
-        app.get('/favicon.ico', (req, res) => {
-            res.setHeader('Content-Type', 'image/x-icon');
-            res.status(200).sendFile(path.resolve('views/favicon.ico'));
-        }); // route: /favicon.ico
+            }); // route: /get
 
-        // handle invalid routes
-        app.get('/*', (req, res) => {
-            res.render('index', {
-                contentType: 'text/html',
-                responseCode: 404,
-                host: req.headers.host
-            });
-            
-        }); // route: /*
+            // get a score by scoreKey
+            app.get('/get/:scoreKey', (req, res) => {
+                let scoreKey = req.params.scoreKey;
 
-    }); // app.listen...
+                // search the collection and return first score with matching key
+                col.find({ scoreKey: scoreKey }).toArray((err, docs) => {
+                    if (err) {
+                        log.error(__filename, req.path, JSON.stringify(err));
+                        return res.status(500).json({
+                            status: format('Error finding "%s" in "%s": %s', scoreKey, COL_NAME, err.message)
+                        });
+                    }
 
-}); // MongoClient.conect...
+                    // Insert score if one is not found.  Update score if it's already in the DB
+                    if (docs.length == 0) {
+                        log.debug(__filename, req.path, format('No score with scoreId" %s.', scoreKey));
+                        res.status(200).json({ result: format('Score not found: %s', scoreKey) });
+                    } else {
+                        log.debug(__filename, req.path, format('Score "%s" found, returning json...', scoreKey));
+                        res.status(200).json(docs[0]);
+                    }
+                });
+            }); // route: /get:scoreKey
+
+            // add a new score or update an existing score
+            app.get(
+                '/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backTrackCount/:bonusPoints/:gameResult',
+                (req, res) => {
+                    let score: Score = new Score();
+                    score.setMazeId(req.params.mazeId);
+                    score.setTeamId(req.params.teamId);
+                    score.setGameId(req.params.gameId);
+                    score.setGameRound(req.params.gameRound);
+                    score.setMoveCount(req.params.moveCount);
+                    score.setBackTrackCount(req.params.backTrackCount);
+                    score.setBonusPoints(req.params.bonusPoints);
+                    score.setGameResult(req.params.gameResult);
+
+                    // search the collection for a maze with the right id
+                    col.find({ scoreKey: score.getScoreKey() }).toArray((err, docs) => {
+                        if (err) {
+                            log.error(__filename, req.path, JSON.stringify(err));
+                            return res.status(500).json({
+                                status: format(
+                                    'Error finding "%s" in "%s": %s',
+                                    score.getScoreKey(),
+                                    COL_NAME,
+                                    err.message
+                                )
+                            });
+                        }
+
+                        // Update score if it's already in the DB, otherwise insert new score
+                        if (docs.length > 0) {
+                            log.debug(__filename, req.path, format('Updating score %s.', score.getScoreKey()));
+                            console.log(JSON.stringify(score));
+                            col.update({ scoreKey: score.getScoreKey() }, score);
+                            res.status(200).json({ result: 'Score Updated' });
+                        } else {
+                            log.debug(__filename, req.path, format('Inserting score %s.', score.getScoreKey()));
+                            col.insert(score);
+                            res.status(200).json({ result: 'Score Inserted' });
+                        }
+                    });
+                }
+            );
+
+            // delete a score
+            app.get('/delete/:scoreKey', (req, res) => {
+                // delete the first document with the matching mazeId
+                let scoreKey = req.params.scoreKey;
+                col.deleteOne({ scoreKey: scoreKey }, function(err, results) {
+                    if (err) {
+                        log.error(__filename, req.path, JSON.stringify(err));
+                        return res.status(500).json({
+                            status: format('Error finding "%s" in "%s": %s', scoreKey, COL_NAME, err.message)
+                        });
+                    }
+
+                    // send the result code with deleted doc count
+                    res.status(200).json({ status: 'ok', count: results.deletedCount });
+                    log.info(__filename, req.path, format('%d document(s) deleted', results.deletedCount));
+                });
+            }); // route: /delete/:scoreKey
+
+            // list all scores (html)
+            app.get('/list', (req, res) => {
+                col.find({}).toArray((err, docs) => {
+                    if (err) {
+                        log.error(__filename, req.path, JSON.stringify(err));
+                        return res
+                            .status(500)
+                            .json({ status: format('Error gettings cores from "%s": %s', COL_NAME, err.message) });
+                    }
+
+                    res.render('list', {
+                        contentType: 'text/html',
+                        responseCode: 200,
+                        scores: docs
+                    });
+                });
+            }); // route: /list
+
+            // Handle favicon requests - using the BCBST favicon.ico
+            app.get('/favicon.ico', (req, res) => {
+                res.setHeader('Content-Type', 'image/x-icon');
+                res.status(200).sendFile(path.resolve('views/favicon.ico'));
+            }); // route: /favicon.ico
+
+            // handle invalid routes
+            app.get('/*', (req, res) => {
+                res.render('index', {
+                    contentType: 'text/html',
+                    responseCode: 404,
+                    host: req.headers.host
+                });
+            }); // route: /*
+        }); // app.listen...
+    }
+); // MongoClient.conect...
 
 /**
  * Watch for SIGINT (process interrupt signal) and trigger shutdown
  */
-process.on('SIGINT', function onSigInt () {
+process.on('SIGINT', function onSigInt() {
     // all done, close the db connection
     log.info(__filename, 'onSigInt()', 'Got SIGINT - Exiting applicaton...');
-    doShutdown()
-  });
+    doShutdown();
+});
 
 /**
  * Watch for SIGTERM (process terminate signal) and trigger shutdown
  */
-process.on('SIGTERM', function onSigTerm () {
+process.on('SIGTERM', function onSigTerm() {
     // all done, close the db connection
     log.info(__filename, 'onSigTerm()', 'Got SIGTERM - Exiting applicaton...');
-    doShutdown()
-  });
+    doShutdown();
+});
 
 /**
  * Gracefully shut down the service
