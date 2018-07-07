@@ -4,6 +4,7 @@ import path from 'path';
 import { format } from 'util';
 import { MongoClient } from 'mongodb';
 import express from 'express';
+import compression from 'compression';
 import { Server } from 'http';
 
 import { Logger, Score } from 'cc2018-ts-lib';
@@ -11,14 +12,7 @@ import { Logger, Score } from 'cc2018-ts-lib';
 // constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
 const DB_NAME = 'cc2018';
-const DB_URL = format(
-    '%s://%s:%s@%s/%s',
-    process.env['DB_PROTOCOL'],
-    process.env['DB_USER'],
-    process.env['DB_USERPW'],
-    process.env['DB_URL'],
-    DB_NAME
-);
+const DB_URL = format('%s://%s:%s@%s/%s', process.env['DB_PROTOCOL'], process.env['DB_USER'], process.env['DB_USERPW'], process.env['DB_URL'], DB_NAME);
 
 const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
 
@@ -42,17 +36,16 @@ let mongoDBClient: MongoClient; // set on successful connection to db
 app.set('views', 'views');
 app.set('view engine', 'pug');
 
+// enable compression
+app.use(compression());
+
 // connect to the database first
 log.info(__filename, SVC_NAME, 'Connecting to MongoDB: ' + DB_URL);
 MongoClient.connect(
     DB_URL,
     (err, client) => {
         if (err) {
-            log.error(
-                __filename,
-                format('MongoClient.connect(%s)', DB_URL),
-                'Error connecting to MongoDB: ' + err.message
-            );
+            log.error(__filename, format('MongoClient.connect(%s)', DB_URL), 'Error connecting to MongoDB: ' + err.message);
             return err;
         }
 
@@ -90,9 +83,7 @@ MongoClient.connect(
                 col.find(searchCriteria).toArray((err, docs) => {
                     if (err) {
                         log.error(__filename, req.path, JSON.stringify(err));
-                        return res
-                            .status(500)
-                            .json({ status: format('Error getting scores from "%s": %s', COL_NAME, err.message) });
+                        return res.status(500).json({ status: format('Error getting scores from "%s": %s', COL_NAME, err.message) });
                     }
 
                     if (docs.length == 0) {
@@ -128,47 +119,39 @@ MongoClient.connect(
             }); // route: /get:scoreKey
 
             // add a new score or update an existing score
-            app.get(
-                '/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backTrackCount/:bonusPoints/:gameResult',
-                (req, res) => {
-                    let score: Score = new Score();
-                    score.setMazeId(req.params.mazeId);
-                    score.setTeamId(req.params.teamId);
-                    score.setGameId(req.params.gameId);
-                    score.setGameRound(req.params.gameRound);
-                    score.setMoveCount(req.params.moveCount);
-                    score.setBackTrackCount(req.params.backTrackCount);
-                    score.setBonusPoints(req.params.bonusPoints);
-                    score.setGameResult(req.params.gameResult);
+            app.get('/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backTrackCount/:bonusPoints/:gameResult', (req, res) => {
+                let score: Score = new Score();
+                score.setMazeId(req.params.mazeId);
+                score.setTeamId(req.params.teamId);
+                score.setGameId(req.params.gameId);
+                score.setGameRound(req.params.gameRound);
+                score.setMoveCount(req.params.moveCount);
+                score.setBackTrackCount(req.params.backTrackCount);
+                score.setBonusPoints(req.params.bonusPoints);
+                score.setGameResult(req.params.gameResult);
 
-                    // search the collection for a maze with the right id
-                    col.find({ scoreKey: score.getScoreKey() }).toArray((err, docs) => {
-                        if (err) {
-                            log.error(__filename, req.path, JSON.stringify(err));
-                            return res.status(500).json({
-                                status: format(
-                                    'Error finding "%s" in "%s": %s',
-                                    score.getScoreKey(),
-                                    COL_NAME,
-                                    err.message
-                                )
-                            });
-                        }
+                // search the collection for a maze with the right id
+                col.find({ scoreKey: score.getScoreKey() }).toArray((err, docs) => {
+                    if (err) {
+                        log.error(__filename, req.path, JSON.stringify(err));
+                        return res.status(500).json({
+                            status: format('Error finding "%s" in "%s": %s', score.getScoreKey(), COL_NAME, err.message)
+                        });
+                    }
 
-                        // Update score if it's already in the DB, otherwise insert new score
-                        if (docs.length > 0) {
-                            log.debug(__filename, req.path, format('Updating score %s.', score.getScoreKey()));
-                            console.log(JSON.stringify(score));
-                            col.update({ scoreKey: score.getScoreKey() }, score);
-                            res.status(200).json({ result: 'Score Updated' });
-                        } else {
-                            log.debug(__filename, req.path, format('Inserting score %s.', score.getScoreKey()));
-                            col.insert(score);
-                            res.status(200).json({ result: 'Score Inserted' });
-                        }
-                    });
-                }
-            );
+                    // Update score if it's already in the DB, otherwise insert new score
+                    if (docs.length > 0) {
+                        log.debug(__filename, req.path, format('Updating score %s.', score.getScoreKey()));
+                        console.log(JSON.stringify(score));
+                        col.update({ scoreKey: score.getScoreKey() }, score);
+                        res.status(200).json({ result: 'Score Updated' });
+                    } else {
+                        log.debug(__filename, req.path, format('Inserting score %s.', score.getScoreKey()));
+                        col.insert(score);
+                        res.status(200).json({ result: 'Score Inserted' });
+                    }
+                });
+            });
 
             // delete a score
             app.get('/delete/:scoreKey', (req, res) => {
@@ -193,9 +176,7 @@ MongoClient.connect(
                 col.find({}).toArray((err, docs) => {
                     if (err) {
                         log.error(__filename, req.path, JSON.stringify(err));
-                        return res
-                            .status(500)
-                            .json({ status: format('Error gettings cores from "%s": %s', COL_NAME, err.message) });
+                        return res.status(500).json({ status: format('Error gettings cores from "%s": %s', COL_NAME, err.message) });
                     }
 
                     res.render('list', {

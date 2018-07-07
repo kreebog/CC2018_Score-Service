@@ -1,39 +1,37 @@
 doctype html
 html(lang='en')
-    head
-        style
-            include style.css
-        title Score Service - List
-        body
-            h1 Score Service - List Scores
-            hr
-            br
-            div(id='goog-gt-tt', class='skiptranslate')
-                #scores
-                    if scores.length > 0
-                        table
-                            th Maze
-                            th Team
-                            th Game
-                            th Round
-                            th Moves
-                            th Back-Tracks
-                            th Bonus Points
-                            th Status
-                            th Actions
-                            each score in scores
-                                tr
-                                    td= score.mazeId
-                                    td= score.teamId
-                                    td= score.gameId
-                                    td= score.gameRound
-                                    td= score.moveCount
-                                    td= score.backtrackCount
-                                    td= score.bonusPoints
-                                    td= score.gameResult
-                                    td
-                                        a(href='/get/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) json
-                                        | &nbsp;|&nbsp;
-                                        a(href='/delete/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) delete
-                    else
-                        h3 No scores found in the database.
+    include head.pug
+    br
+    div(class='container text-center')
+        h1 Score Service - List Scores
+        br
+        div(id='goog-gt-tt', class='skiptranslate')
+            #scores
+                if scores.length > 0
+                    table(class='table table-striped table-dark table-hover' style='color:antiquewhite')
+                        th Maze
+                        th Team
+                        th Game
+                        th Round
+                        th Moves
+                        th Back-Tracks
+                        th Bonus Points
+                        th Status
+                        th Actions
+                        each score in scores
+                            tr
+                                td= score.mazeId
+                                td= score.teamId
+                                td= score.gameId
+                                td= score.gameRound
+                                td= score.moveCount
+                                td= score.backtrackCount
+                                td= score.bonusPoints
+                                td= score.gameResult
+                                td
+                                    a(href='/get/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) json
+                                    | &nbsp;|&nbsp;
+                                    a(href='/delete/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) delete
+                else
+                    h3 No scores found in the database.
+    include foot.pug

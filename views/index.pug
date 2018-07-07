@@ -1,74 +1,72 @@
 doctype html
-html
-    head
-        style
-            include style.css
-        title Score Service - API Documentation
-    body
-        h1 Score Service - API Documentations
-        hr
+html(lang="en")
+    include head.pug
+    br
+    div(class='container text-center')
+        h1 Score Service - API Documentation
         br
-        table
+        table(class='table table-striped table-dark table-hover' style='color:antiquewhite')
+            th Link
             th Method
             th Action
             th Type
             th Arguments
             th Return
-            th Sample
             th Status
             th Description
             tr
+                td
+                    a(href= 'http://' + host + '/get') All Scores
                 td Get
                 td Get All
                 td JSON 
-                td(class='td-left') N/A
-                td(class='td-left') Score
-                td(class='td-left')
-                    a(href= 'http://' + host + '/get') Sample Link
+                td N/A
+                td Score
                 td Current
-                td(class='td-left') Returns all available scores.
+                td(style='text-align:left') Returns all available scores.
             tr
+                td
+                    a(href= 'http://' + host + '/get?mazeId=10:15:SimpleSample') Get Scores by...
                 td Get
                 td Get
                 td JSON 
-                td(class='td-left') QueryString: <br>
+                td(style='text-align:left') QueryString: <br>
                     ul
                         li /get?scoreKey=mH:mW:mSeed:teamID:gameID:gameRound
-                        li /get?teamId=Team ID (team name)
-                        li /get?mazeId=Maze ID (height:width:seed)
-                        li /get?gameId=Game ID
-                td(class='td-left') Scores
-                td(class='td-left')
-                    a(href= 'http://' + host + '/get?mazeId=10:15:SimpleSample') Sample Link
+                        li /get?teamId=TeamID
+                        li /get?mazeId=MazeID (height:width:seed)
+                        li /get?gameId=GameID
+                td Scores
                 td Current
-                td(class='td-left') Returns available scores matching the search criteria.
+                td(style='text-align:left') Returns available scores matching the search criteria.
             tr
+                td
+                    a(href= 'http://' + host + '/add_update/10:15:SimpleSample/Dungeon_Delvers/3232144/4/48/12/3122/WIN') Add / Update Score
                 td Get
                 td Insert / Update
                 td JSON 
-                td(class='td-left') Maze ID (H:W:Seed) / TeamID (Team Name) / Game ID / Game Round / Move Count / Backtrack Count / Bonus Points / Round Result
-                td(class='td-left') Result
-                td(class='td-left')
-                    a(href= 'http://' + host + '/add_update/10:15:SimpleSample/Dungeon_Delvers/3232144/4/48/12/3122/WIN') Sample Link
+                td(style='text-align:left') Maze ID (H:W:Seed) / TeamID (Team Name) / Game ID / Game Round / Move Count / Backtrack Count / Bonus Points / Round Result
+                td Result
                 td Current
-                td(class='td-left') Inserts or updates a score document.
+                td(style='text-align:left') Inserts or updates a score document.
             tr
+                td
+                    a(href= 'http://' + host + '/delete/10:15:SimpleSample:Dungeon_Delvers:3232144:4') Delete Score
                 td Get
                 td Delete
                 td JSON 
-                td(class='td-left') Score Key (mH:mW:mSeed:teamID:gameID:gameRound)
-                td(class='td-left') Result
-                td(class='td-left')
-                    a(href= 'http://' + host + '/delete/10:15:SimpleSample:Dungeon_Delvers:3232144:4') Sample Link
+                td(style='text-align:left') Score Key (mH:mW:mSeed:teamID:gameID:gameRound)
+                td Result
                 td Current
-                td(class='td-left') Deletes a single score with the matching Score Key.
+                td(style='text-align:left') Deletes a single score with the matching Score Key.
             tr
+                td
+                    a(href= 'http://' + host + '/list') List Scores
                 td Get
                 td List
                 td HTML 
-                td(class='td-left') N/A
-                td(class='td-left') HTML Page
-                td(class='td-left')
-                    a(href= 'http://' + host + '/list') Sample Link
+                td N/A
+                td HTML Page
                 td Current
-                td(class='td-left') Lists all available scores w/ handy links to manage them.
+                td(style='text-align:left') Lists all available scores w/ handy links to manage them.
+    include foot.pug

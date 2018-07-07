@@ -9,6 +9,7 @@ const path_1 = __importDefault(require("path"));
 const util_1 = require("util");
 const mongodb_1 = require("mongodb");
 const express_1 = __importDefault(require("express"));
+const compression_1 = __importDefault(require("compression"));
 const cc2018_ts_lib_1 = require("cc2018-ts-lib");
 // constants from environment variables (or .env file)
 const ENV = process.env['NODE_ENV'] || 'PROD';
@@ -30,6 +31,8 @@ let mongoDBClient; // set on successful connection to db
 // configure pug
 app.set('views', 'views');
 app.set('view engine', 'pug');
+// enable compression
+app.use(compression_1.default());
 // connect to the database first
 log.info(__filename, SVC_NAME, 'Connecting to MongoDB: ' + DB_URL);
 mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
@@ -66,9 +69,7 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
             col.find(searchCriteria).toArray((err, docs) => {
                 if (err) {
                     log.error(__filename, req.path, JSON.stringify(err));
-                    return res
-                        .status(500)
-                        .json({ status: util_1.format('Error getting scores from "%s": %s', COL_NAME, err.message) });
+                    return res.status(500).json({ status: util_1.format('Error getting scores from "%s": %s', COL_NAME, err.message) });
                 }
                 if (docs.length == 0) {
                     res.status(200).json({ status: 'No scores found.' });
@@ -154,9 +155,7 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
             col.find({}).toArray((err, docs) => {
                 if (err) {
                     log.error(__filename, req.path, JSON.stringify(err));
-                    return res
-                        .status(500)
-                        .json({ status: util_1.format('Error gettings cores from "%s": %s', COL_NAME, err.message) });
+                    return res.status(500).json({ status: util_1.format('Error gettings cores from "%s": %s', COL_NAME, err.message) });
                 }
                 res.render('list', {
                     contentType: 'text/html',
