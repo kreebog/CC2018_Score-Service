@@ -118,15 +118,19 @@ MongoClient.connect(
                 });
             }); // route: /get:scoreKey
 
+            app.put('/scores/add/', (res, req) => {
+                log.debug(__filename, res.url, format('Add score with put...'));
+            });
+
             // add a new score or update an existing score
-            app.get('/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backTrackCount/:bonusPoints/:gameResult', (req, res) => {
+            app.get('/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backtrackCount/:bonusPoints/:gameResult', (req, res) => {
                 let score: Score = new Score();
                 score.setMazeId(req.params.mazeId);
                 score.setTeamId(req.params.teamId);
                 score.setGameId(req.params.gameId);
                 score.setGameRound(req.params.gameRound);
                 score.setMoveCount(req.params.moveCount);
-                score.setBackTrackCount(req.params.backTrackCount);
+                score.setBacktrackCount(req.params.backtrackCount);
                 score.setBonusPoints(req.params.bonusPoints);
                 score.setGameResult(req.params.gameResult);
 
