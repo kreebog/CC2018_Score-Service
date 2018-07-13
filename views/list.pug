@@ -31,7 +31,7 @@ html(lang='en')
                                 td
                                     a(href='/get/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) json
                                     | &nbsp;|&nbsp;
-                                    a(href='/delete/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) delete
+                                    a(href='/delete/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound + '/pw') delete
                 else
                     h3 No scores found in the database.
     include foot.pug

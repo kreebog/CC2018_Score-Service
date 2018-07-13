@@ -15,6 +15,7 @@ const DB_NAME = 'cc2018';
 const DB_URL = format('%s://%s:%s@%s/%s', process.env['DB_PROTOCOL'], process.env['DB_USER'], process.env['DB_USERPW'], process.env['DB_URL'], DB_NAME);
 
 const SVC_PORT = process.env.SCORE_SVC_PORT || 8080;
+const DELETE_PASSWORD = process.env.DELETE_PASSWORD;
 
 // grab the logger singleton
 const log = Logger.getInstance();
@@ -158,9 +159,13 @@ MongoClient.connect(
             });
 
             // delete a score
-            app.get('/delete/:scoreKey', (req, res) => {
+            app.get('/delete/:scoreKey/:password', (req, res) => {
                 // delete the first document with the matching mazeId
                 let scoreKey = req.params.scoreKey;
+
+                // PASSWORD FOR DELETES FOUND IN ENVIRONMENT VARIABLES
+                if (DELETE_PASSWORD != req.params.password) return res.status(401).json({ status: 'Missing or incorrect password.' });
+
                 col.deleteOne({ scoreKey: scoreKey }, function(err, results) {
                     if (err) {
                         log.error(__filename, req.path, JSON.stringify(err));
