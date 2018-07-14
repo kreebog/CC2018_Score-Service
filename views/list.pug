@@ -16,7 +16,7 @@ html(lang='en')
                         th Moves
                         th Back-Tracks
                         th Bonus Points
-                        th Status
+                        th Result
                         th Actions
                         each score in scores
                             tr
@@ -27,7 +27,8 @@ html(lang='en')
                                 td= score.moveCount
                                 td= score.backtrackCount
                                 td= score.bonusPoints
-                                td= score.gameResult
+                                td
+                                    = GAME_RESULTS[score.gameResult]
                                 td
                                     a(href='/get/' + score.mazeId + ':' + score.teamId + ':' + score.gameId + ':' + score.gameRound) json
                                     | &nbsp;|&nbsp;

@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+let bodyParser = require('body-parser');
 require('dotenv').config();
 const url_1 = __importDefault(require("url"));
 const path_1 = __importDefault(require("path"));
@@ -34,6 +35,8 @@ app.set('views', 'views');
 app.set('view engine', 'pug');
 // enable compression
 app.use(compression_1.default());
+// add body-parser
+app.use(bodyParser.json());
 // connect to the database first
 log.info(__filename, SVC_NAME, 'Connecting to MongoDB: ' + DB_URL);
 mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
@@ -69,7 +72,7 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
             }
             col.find(searchCriteria).toArray((err, docs) => {
                 if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
+                    log.error(__filename, req.url, JSON.stringify(err));
                     return res.status(500).json({ status: util_1.format('Error getting scores from "%s": %s', COL_NAME, err.message) });
                 }
                 if (docs.length == 0) {
@@ -86,24 +89,26 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
             // search the collection and return first score with matching key
             col.find({ scoreKey: scoreKey }).toArray((err, docs) => {
                 if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
+                    log.error(__filename, req.url, JSON.stringify(err));
                     return res.status(500).json({
                         status: util_1.format('Error finding "%s" in "%s": %s', scoreKey, COL_NAME, err.message)
                     });
                 }
                 // Insert score if one is not found.  Update score if it's already in the DB
                 if (docs.length == 0) {
-                    log.debug(__filename, req.path, util_1.format('No score with scoreId" %s.', scoreKey));
-                    res.status(200).json({ result: util_1.format('Score not found: %s', scoreKey) });
+                    log.debug(__filename, req.url, util_1.format('No score with scoreId" %s.', scoreKey));
+                    res.status(200).json({ status: util_1.format('Score not found: %s', scoreKey) });
                 }
                 else {
-                    log.debug(__filename, req.path, util_1.format('Score "%s" found, returning json...', scoreKey));
+                    log.debug(__filename, req.url, util_1.format('Score "%s" found, returning json...', scoreKey));
                     res.status(200).json(docs[0]);
                 }
             });
         }); // route: /get:scoreKey
-        app.put('/scores/add/', (res, req) => {
-            log.debug(__filename, res.url, util_1.format('Add score with put...'));
+        // just shove a whole score from request body into the database all at once
+        app.post('/score', (req, res) => {
+            col.insert(req.body);
+            log.debug(__filename, req.url, util_1.format('Score posted: ', req.body));
         });
         // add a new score or update an existing score
         app.get('/add_update/:mazeId/:teamId/:gameId/:gameRound/:moveCount/:backtrackCount/:bonusPoints/:gameResult', (req, res) => {
@@ -119,22 +124,22 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
             // search the collection for a maze with the right id
             col.find({ scoreKey: score.getScoreKey() }).toArray((err, docs) => {
                 if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
+                    log.error(__filename, req.url, JSON.stringify(err));
                     return res.status(500).json({
                         status: util_1.format('Error finding "%s" in "%s": %s', score.getScoreKey(), COL_NAME, err.message)
                     });
                 }
                 // Update score if it's already in the DB, otherwise insert new score
                 if (docs.length > 0) {
-                    log.debug(__filename, req.path, util_1.format('Updating score %s.', score.getScoreKey()));
+                    log.debug(__filename, req.url, util_1.format('Updating score %s.', score.getScoreKey()));
                     console.log(JSON.stringify(score));
                     col.update({ scoreKey: score.getScoreKey() }, score);
-                    res.status(200).json({ result: 'Score Updated' });
+                    res.status(200).json({ status: 'Score Updated' });
                 }
                 else {
-                    log.debug(__filename, req.path, util_1.format('Inserting score %s.', score.getScoreKey()));
+                    log.debug(__filename, req.url, util_1.format('Inserting score %s.', score.getScoreKey()));
                     col.insert(score);
-                    res.status(200).json({ result: 'Score Inserted' });
+                    res.status(200).json({ status: 'Score Inserted' });
                 }
             });
         });
@@ -147,27 +152,28 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
                 return res.status(401).json({ status: 'Missing or incorrect password.' });
             col.deleteOne({ scoreKey: scoreKey }, function (err, results) {
                 if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
+                    log.error(__filename, req.url, JSON.stringify(err));
                     return res.status(500).json({
                         status: util_1.format('Error finding "%s" in "%s": %s', scoreKey, COL_NAME, err.message)
                     });
                 }
                 // send the result code with deleted doc count
                 res.status(200).json({ status: 'ok', count: results.deletedCount });
-                log.info(__filename, req.path, util_1.format('%d document(s) deleted', results.deletedCount));
+                log.warn(__filename, req.url, util_1.format('%d document(s) deleted', results.deletedCount));
             });
         }); // route: /delete/:scoreKey
         // list all scores (html)
         app.get('/list', (req, res) => {
             col.find({}).toArray((err, docs) => {
                 if (err) {
-                    log.error(__filename, req.path, JSON.stringify(err));
+                    log.error(__filename, req.url, JSON.stringify(err));
                     return res.status(500).json({ status: util_1.format('Error gettings cores from "%s": %s', COL_NAME, err.message) });
                 }
                 res.render('list', {
                     contentType: 'text/html',
                     responseCode: 200,
-                    scores: docs
+                    scores: docs,
+                    GAME_RESULTS: cc2018_ts_lib_1.GAME_RESULTS
                 });
             });
         }); // route: /list
@@ -178,6 +184,7 @@ mongodb_1.MongoClient.connect(DB_URL, (err, client) => {
         }); // route: /favicon.ico
         // handle invalid routes
         app.get('/*', (req, res) => {
+            log.debug(__filename, req.url, 'Invalid route, rendering index.');
             res.render('index', {
                 contentType: 'text/html',
                 responseCode: 404,
